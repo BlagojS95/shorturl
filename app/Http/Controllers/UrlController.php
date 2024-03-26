@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use App\Models\Url;
 use App\Models\User;
 use Hashids\Hashids;
+use App\Models\Visit;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +21,13 @@ class UrlController extends Controller
     {
         $user = auth()->user(); 
         $urls = Url::with('user')->get();
+
+        $visits = Visit::all();
     
         return view('urls.index', [
             'urls' => $urls,
-            'user' => $user, 
+            'user' => $user,
+            'visits' => $visits
         ]);
     }
 
@@ -61,15 +67,14 @@ class UrlController extends Controller
 
         $shortUrl = 'https://shorturl.com/' . $shortCode;
 
-        Url::create([
+        $url = Url::create([
             'user_id' => auth()->user()->id,
             'name' => $request->input('name'),
             'original_url' => $request->input('original_url'),
             'shortened_url' => $shortUrl,
             'short_code' => $shortCode,
         ]);
-    
-    
+
         return redirect(route('urls.index'))->with('success', 'URL created successfully.');
     }
 
@@ -80,12 +85,49 @@ class UrlController extends Controller
 
         if ($url) {
 
+            $now = Carbon::now();
+            
+            $today = $now->toDateString();
+            $visit = Visit::firstOrCreate([
+                'url_id' => $url->id,
+                'visit_date' => $today,
+            ]);
+
+            //Each column will be reseted to 1 if the IF condition is satisified. So the link must be clicked. In order for these counts to be updated regardless of whether a link is clicked, we would need to implement a separate mechanism, such as a scheduled task or cron job, to update these counts at the start of each week, month, and year. 
+
+            if ($visit->visit_date != $today) {
+                $visit->visits_day = 1;
+            } else {
+                $visit->increment('visits_day');
+            }
+    
+            if ($now->isMonday()) {
+                $visit->visits_week = 1;
+            } else {
+                $visit->increment('visits_week');
+            }
+    
+            if ($now->day === 1) {
+                $visit->visits_month = 1;
+            } else {
+                $visit->increment('visits_month');
+            }
+    
+
+            if ($now->month === 1 && $now->day === 1) {
+                $visit->visits_year = 1;
+            } else {
+                $visit->increment('visits_year');
+            }
+    
+            $visit->save();
+    
             return redirect()->away($url->original_url);
         } else {
-            
             return response()->view('errors.404', [], 404);
         }
     }
+    
 
     /**
      * Display the specified resource.
@@ -116,6 +158,12 @@ class UrlController extends Controller
      */
     public function destroy(Url $url)
     {
-        //
+        if ($url->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'You are not authorized to delete this URL.');
+        }
+    
+        $url->deleteWithVisits();
+    
+        return redirect()->route('urls.index')->with('success', 'URL deleted successfully.');
     }
 }

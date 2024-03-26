@@ -14,7 +14,11 @@ return new class extends Migration
         Schema::create('visits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('url_id')->constrained()->cascadeOnDelete();
-            $table->timestamp('visited_at');
+            $table->date('visit_date')->default(now()->toDateString());
+            $table->unsignedInteger('visits_day')->default(0);
+            $table->unsignedInteger('visits_week')->default(0);
+            $table->unsignedInteger('visits_month')->default(0);
+            $table->unsignedInteger('visits_year')->default(0);
         });
     }
 

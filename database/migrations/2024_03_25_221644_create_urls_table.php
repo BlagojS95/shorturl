@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('original_url');
+            $table->string('original_url', 1024);
             $table->string('shortened_url')->nullable();
             $table->string('short_code')->nullable();
             $table->softDeletes('deleted_at');

@@ -9,6 +9,8 @@ class Visit extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'url_id',
         'user_id'
@@ -18,4 +20,6 @@ class Visit extends Model
     {
         return $this->belongsTo(Url::class);
     }
+
+    
 }

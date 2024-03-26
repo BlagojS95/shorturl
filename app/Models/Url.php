@@ -26,6 +26,12 @@ class Url extends Model
         return $this->hasMany(Visit::class);
     }
 
+    public function deleteWithVisits()
+    {
+        $this->visits()->delete();
+        $this->delete();
+    }
+
     public static function generateUniqueShortCode($length = 6)
     {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -37,10 +43,33 @@ class Url extends Model
 
         $existingUrl = self::where('short_code', $shortCode)->first();
 
+        // recursive call to the generateUniqueShortCode function with the same $length parameter to generate a new short code.
+
         if ($existingUrl) {
             return self::generateUniqueShortCode($length);
         }
 
         return $shortCode;
+    }
+
+    //functions to get the visits per day, week, month and year
+    public function visitsToday()
+    {
+        return $this->visits()->whereDate('visit_date', today())->count();
+    }
+
+    public function visitsThisWeek()
+    {
+        return $this->visits()->whereBetween('visit_date', [now()->startOfWeek(), now()->endOfWeek()])->count();
+    }
+
+    public function visitsThisMonth()
+    {
+        return $this->visits()->whereYear('visit_date', now()->year)->whereMonth('visit_date', now()->month)->count();
+    }
+
+    public function visitsThisYear()
+    {
+        return $this->visits()->whereYear('visit_date', now()->year)->count();
     }
 }
