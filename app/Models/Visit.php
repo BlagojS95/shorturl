@@ -9,11 +9,13 @@ class Visit extends Model
 {
     use HasFactory;
 
-    public $timestamps = false;
-
     protected $fillable = [
         'url_id',
-        'user_id'
+        'user_id',
+        'visits_day',
+        'visits_week',
+        'visits_month',
+        'visits_year'
     ];
 
     public function url()

@@ -60,7 +60,7 @@ class UrlController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'original_url' => 'required|url|max:2048',
+            'original_url' => 'required|url|max:2048|unique:urls,original_url',
         ]);
     
         $shortCode = Url::generateUniqueShortCode();
@@ -75,6 +75,8 @@ class UrlController extends Controller
             'short_code' => $shortCode,
         ]);
 
+        
+
         return redirect(route('urls.index'))->with('success', 'URL created successfully.');
     }
 
@@ -88,15 +90,19 @@ class UrlController extends Controller
             $now = Carbon::now();
             
             $today = $now->toDateString();
+
             $visit = Visit::firstOrCreate([
                 'url_id' => $url->id,
-                'visit_date' => $today,
             ]);
+
+            $visit->visit_date = $today;
 
             //Each column will be reseted to 1 if the IF condition is satisified. So the link must be clicked. In order for these counts to be updated regardless of whether a link is clicked, we would need to implement a separate mechanism, such as a scheduled task or cron job, to update these counts at the start of each week, month, and year. 
 
-            if ($visit->visit_date != $today) {
-                $visit->visits_day = 1;
+            $lastVisitDate = $visit->updated_at->toDateString();
+
+            if ($lastVisitDate != $today) {
+                $visit->update(['visits_day' => 1]);
             } else {
                 $visit->increment('visits_day');
             }

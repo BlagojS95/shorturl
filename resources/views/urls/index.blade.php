@@ -74,22 +74,24 @@
                 <a class="block mt-4 text-lg text-gray-900" href="{{$url->original_url}}"> {{ __('Original Url: ') }}{{ $url->original_url }}</a>
                 <a class="mt-4 text-lg text-gray-900 font-bold underline" href="{{ route('short-url.redirect', ['shortCode' => $url->short_code]) }}"> {{ __('Shortened Url: ') }}{{ $url->shortened_url }}</a>
 
-                <div class="mt-4 flex items-center space-x-2 text-gray-600">
-                    @foreach ($visits as $visit)
-                    <div>
+                @php
+                    $urlVisits = $visits->where('url_id', $url->id);
+                @endphp
+                @foreach ($urlVisits as $visit)
+                    <div class="flex justify-around">
                         <span class="font-bold">{{ __('Visits') }}:</span>
                         <span>{{ __('Today') }} - {{ $visit->visits_day }}</span>
-                    </div>
-                    <div>
+                    
+                    
                         <span>{{ __('This Week') }} - {{ $visit->visits_week }}</span>
-                    </div>
-                    <div>
+                    
+                    
                         <span>{{ __('This Month') }} - {{ $visit->visits_month }}</span>
-                    </div>
-                    <div>
+                    
+                    
                         <span>{{ __('This Year') }} - {{ $visit->visits_year }}</span>
                     </div>
-                    @endforeach
+                @endforeach
                 </div>
             </div>
         </div>

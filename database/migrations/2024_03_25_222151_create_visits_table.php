@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('visits_week')->default(0);
             $table->unsignedInteger('visits_month')->default(0);
             $table->unsignedInteger('visits_year')->default(0);
+            $table->timestamps();
         });
     }
 
