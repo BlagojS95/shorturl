@@ -69,6 +69,8 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 1. Clone the Repository
    git clone https://github.com/BlagojS95/shorturl
+   cd shorturl
+   git checkout shortURL
 
 2. Install Dependencies
    cd shorturl-project
